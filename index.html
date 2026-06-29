@@ -54,8 +54,15 @@
                 </div>
             </div>
 
-            <!-- Student Profile / Theme / Auth -->
+            <!-- Student Profile / Theme / Auth / Sync -->
             <div class="flex items-center space-x-3">
+                
+                <!-- Manual Sync with Google Sheets -->
+                <button onclick="sendStudentProgressToSheets()" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all flex items-center space-x-1" title="Sincronizar progreso en la nube del profesor">
+                    <i class="fa-solid fa-cloud-arrow-up text-base"></i>
+                    <span class="text-xs font-bold hidden sm:inline">Sincronizar</span>
+                </button>
+
                 <!-- Theme Toggle Button -->
                 <button onclick="toggleDarkMode()" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all" title="Cambiar Tema">
                     <i id="themeIcon" class="fa-solid fa-moon text-lg dark:hidden"></i>
@@ -94,9 +101,27 @@
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-colors">
                 <!-- Progress & Score Header -->
                 <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center transition-colors">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">PROGRESO EJERCICIO</span>
-                        <p id="progressLabel" class="text-lg font-bold text-slate-900 dark:text-white">1 de 100</p>
+                    <div class="flex items-center space-x-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider flex items-center">
+                                PROGRESO LOCAL
+                                <span class="ml-1.5 w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block animate-pulse" title="Progreso autoguardado en este navegador"></span>
+                            </span>
+                            <p id="progressLabel" class="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">1 de 100</p>
+                        </div>
+                        <!-- Navigation Arrows -->
+                        <div class="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-lg border border-slate-200/60 dark:border-slate-700">
+                            <button onclick="prevExercise()" class="p-1 hover:bg-white dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-300 transition-colors" title="Ejercicio Anterior">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            <button onclick="nextExercise()" class="p-1 hover:bg-white dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-300 transition-colors" title="Ejercicio Siguiente">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-600">|</span>
+                            <button onclick="openResetModal()" class="p-1 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded text-slate-400 hover:text-rose-500 transition-colors" title="Reiniciar todo el progreso">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="text-right">
                         <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">PUNTUACIÓN GLOBAL</span>
@@ -130,31 +155,6 @@
                     <div class="mt-4 text-center">
                         <p id="activityVerb" class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest"></p>
                     </div>
-                </div>
-            </div>
-
-            <!-- STUDENT TRACKER CARD -->
-            <div class="bg-slate-900 dark:bg-slate-900 text-white rounded-2xl p-5 shadow-md flex flex-col space-y-4 border border-transparent dark:border-slate-800">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-bold text-sm tracking-wide text-slate-400">TARJETA DEL ESTUDIANTE</h3>
-                    <span id="syncIndicatorStatus" class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1">
-                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span> Sincronizado
-                    </span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div id="trackerAvatar" class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
-                        <i class="fa-solid fa-user-graduate text-slate-300 text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 id="trackerName" class="font-bold text-base">Estudiante Invitado</h4>
-                        <p id="trackerEmail" class="text-xs text-slate-400">Regístrate para guardar tu progreso</p>
-                    </div>
-                </div>
-                <div class="border-t border-slate-800 pt-3 flex justify-between items-center text-xs text-slate-400">
-                    <span>Estado: <b class="text-indigo-400 dark:text-indigo-300">Practicando</b></span>
-                    <button onclick="sendStudentProgressToSheets()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-md transition-colors flex items-center space-x-1 shadow-sm">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> <span>Guardar Ahora</span>
-                    </button>
                 </div>
             </div>
         </section>
@@ -302,7 +302,7 @@
                                         <span id="shadowingResultScore" class="text-xs font-bold px-2 py-0.5 rounded-full"></span>
                                     </div>
                                     <p id="shadowingResultFeedback" class="text-xs mt-1 leading-relaxed text-slate-600 dark:text-slate-300"></p>
-                                </div>
+                                end    </div>
                             </div>
                         </div>
                     </div>
@@ -321,10 +321,10 @@
     <!-- FOOTER -->
     <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 mt-8 transition-colors">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 dark:text-slate-500 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-            <p>&copy; 2026 Present Continuous Master - Práctica Interactiva en el Aula.</p>
+            <p>&copy; 2026 Present Continuous Master - Práctica Interactiva con Auto-Guardado.</p>
             <p class="flex items-center space-x-2">
                 <span class="w-2 h-2 bg-emerald-500 rounded-full inline-block animate-pulse"></span>
-                <span>Enlace de Google Sheets Sincronizado</span>
+                <span>Progreso guardado automáticamente en este navegador</span>
             </p>
         </div>
     </footer>
@@ -359,6 +359,23 @@
         </div>
     </div>
 
+    <!-- MODAL: CONFIRM RESET PROGRESS (Custom, secure alert fallback) -->
+    <div id="resetConfirmModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-sm w-full shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="p-6">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                    <span>¿Reiniciar todo el progreso?</span>
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Esta acción borrará todas tus respuestas guardadas localmente y volverás al ejercicio 1. No se puede deshacer.</p>
+            </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
+                <button onclick="closeResetModal()" class="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="confirmResetAllProgress()" class="bg-rose-600 hover:bg-rose-750 text-white px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm transition-colors">Sí, reiniciar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- NOTIFICATION POPUP SYSTEM -->
     <div id="notificationToast" class="fixed bottom-4 right-4 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white rounded-xl p-4 shadow-lg flex items-center space-x-3 max-w-sm">
         <div id="toastIcon" class="text-lg"></div>
@@ -370,7 +387,6 @@
         // GLOBAL DATA & EXERCISES RECONSTRUCTION (100 exercises dynamically generated)
         // ====================================================================
 
-        // Full list of singular verbs mapping perfectly with genders shown in the images
         const singularVerbsPool = [
             { verb: 'cleaning', pronoun: 'she', gerund: 'cleaning', desc: 'Limpiar' },
             { verb: 'coding', pronoun: 'he', gerund: 'coding', desc: 'Programar' },
@@ -397,7 +413,6 @@
             { verb: 'writing', pronoun: 'she', gerund: 'writing', desc: 'Escribir' }
         ];
 
-        // Full list of plural verbs mapping perfectly to "acciones plural" folder
         const pluralVerbsPool = [
             { verb: 'cleaning', pronoun: 'they', gerund: 'cleaning', desc: 'Limpiar (Plural)' },
             { verb: 'coding', pronoun: 'they', gerund: 'coding', desc: 'Programar (Plural)' },
@@ -428,17 +443,15 @@
 
         let exercises = [];
         
-        // Dynamic builder that constructs exactly 100 varied high-quality exercises 
         function buildExercises() {
             exercises = [];
             
-            // Generate Singular Set (50 exercises)
+            // Generar Set Singular (50 ejercicios)
             for (let i = 0; i < 50; i++) {
                 const item = singularVerbsPool[i % singularVerbsPool.length];
                 const subject = item.pronoun === 'she' ? "She" : "He";
                 const contraction = item.pronoun === 'she' ? "She's" : "He's";
                 
-                // Variar entre preguntas directas (afirmativas) o correctivas (negativas)
                 const isNegativeScenario = i % 2 === 0;
                 let grammarQuestion = `What is ${item.pronoun} doing?`;
                 let expectedGrammarPrimary = `${contraction} ${item.gerund}.`;
@@ -462,12 +475,12 @@
                     folder: 'acciones singular',
                     imagePath: `acciones singular/${item.verb}`,
                     
-                    // Tab 1: Grammar
+                    // Tab 1: Gramática
                     grammarQuestion: grammarQuestion,
                     grammarAnswerPrimary: expectedGrammarPrimary,
                     grammarAnswerFull: expectedGrammarFull,
                     
-                    // Tab 2: Questions
+                    // Tab 2: Preguntas
                     questionPrompt: `Pregunta de Sí/No confirmando si ${item.pronoun === 'she' ? 'ella' : 'él'} está haciendo la acción: "${item.desc}".`,
                     questionAnswerPrimary: `Is ${item.pronoun} ${item.gerund}?`,
                     
@@ -476,7 +489,7 @@
                 });
             }
 
-            // Generate Plural Set (50 exercises)
+            // Generar Set Plural (50 ejercicios)
             for (let i = 0; i < 50; i++) {
                 const item = pluralVerbsPool[i % pluralVerbsPool.length];
                 const isNegativeScenario = i % 2 !== 0;
@@ -503,12 +516,12 @@
                     folder: 'acciones plural',
                     imagePath: `acciones plural/${item.verb}`,
                     
-                    // Tab 1: Grammar
+                    // Tab 1: Gramática
                     grammarQuestion: grammarQuestion,
                     grammarAnswerPrimary: expectedGrammarPrimary,
                     grammarAnswerFull: expectedGrammarFull,
                     
-                    // Tab 2: Questions
+                    // Tab 2: Preguntas
                     questionPrompt: `Pregunta de Sí/No confirmando la acción de las personas: "${item.desc}".`,
                     questionAnswerPrimary: `Are they ${item.gerund}?`,
                     
@@ -517,12 +530,12 @@
                 });
             }
 
-            // Shuffle pool of 100 exercises cleanly to ensure variety
+            // Mezclar limpiamente para asegurar variedad de ejercicios
             exercises.sort((a, b) => (a.id * 17) % 100 - (b.id * 17) % 100);
         }
 
         // ====================================================================
-        // STATE MANAGEMENT
+        // MANEJO DE ESTADO (Local Storage & App States)
         // ====================================================================
         let currentIndex = 0;
         let activeTab = 'grammar';
@@ -530,40 +543,39 @@
         let speechRecognition = null;
         let isRecordingSpeech = false;
         
-        // Dictation Specific Recognition States
+        // Reconocimiento de dictado
         let dictationRecognition = null;
         let activeDictationInputId = null;
         let activeDictationBtnId = null;
         let isRecordingDictation = false;
 
-        // Button State Trackers for dynamic transform
         let grammarChecked = false;
         let questionChecked = false;
         
-        // Progress Scores
+        // Puntuaciones (Se sincronizan automáticamente con LocalStorage)
         let score = {
             grammar: {},    // index: true/false
             questions: {},  // index: true/false
-            shadowing: {}   // index: percentage match
+            shadowing: {}   // index: porcentaje de coincidencia
         };
 
-        // User Profile State
+        // Perfil del estudiante
         let currentStudent = {
             name: "Estudiante Invitado",
             email: "invitado@aula.com",
             isAuthenticated: false
         };
 
-        // Sync State URL - Configured to Teacher's Sheet Web App by default
         const TEACHER_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzv6T5SzGXL92HJ8vDMwRjgU1C6WklCX32sh7H_gWIgVQPGTiHyxDBShQMgVo2FgeiJ2g/exec";
         let sheetsWebUrl = TEACHER_SHEETS_URL;
 
         // ====================================================================
-        // INITIALIZATION
+        // INICIALIZACIÓN DE LA APLICACIÓN
         // ====================================================================
         window.addEventListener('DOMContentLoaded', () => {
             buildExercises();
             loadStudentFromLocalStorage();
+            loadProgressFromLocalStorage(); // Carga de estado local prioritaria
             initSpeechRecognition();
             initDictationRecognition();
             loadCurrentExercise();
@@ -571,7 +583,54 @@
         });
 
         // ====================================================================
-        // ADAPTIVE IMAGE LOADER (Fallback extensions for local or web hosts)
+        // SISTEMA DE GUARDADO LOCAL (LOCALSTORAGE)
+        // ====================================================================
+        function saveProgressToLocalStorage() {
+            localStorage.setItem('presentContinuous_currentIndex', currentIndex);
+            localStorage.setItem('presentContinuous_score', JSON.stringify(score));
+        }
+
+        function loadProgressFromLocalStorage() {
+            const savedIndex = localStorage.getItem('presentContinuous_currentIndex');
+            const savedScore = localStorage.getItem('presentContinuous_score');
+            
+            if (savedIndex !== null) {
+                currentIndex = parseInt(savedIndex, 10);
+            }
+            if (savedScore !== null) {
+                try {
+                    score = JSON.parse(savedScore);
+                } catch(e) {
+                    console.error("Error al decodificar progreso local:", e);
+                }
+            }
+        }
+
+        // Modales de Confirmación para Reiniciar Progreso
+        function openResetModal() {
+            document.getElementById('resetConfirmModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetConfirmModal').classList.add('hidden');
+        }
+
+        function confirmResetAllProgress() {
+            currentIndex = 0;
+            score = {
+                grammar: {},
+                questions: {},
+                shadowing: {}
+            };
+            saveProgressToLocalStorage();
+            loadCurrentExercise();
+            closeResetModal();
+            showToast("Progreso local reiniciado por completo.", "info");
+            autoSyncIfPossible();
+        }
+
+        // ====================================================================
+        // CARGA GRÁFICA ADAPTATIVA
         // ====================================================================
         const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'PNG', 'JPG', 'JPEG'];
         
@@ -584,7 +643,6 @@
 
             function tryNextExtension() {
                 if (extIndex >= EXTENSIONS.length) {
-                    // Fail gracefully to fallback placeholder
                     imgElement.src = `https://placehold.co/400x400/f1f5f9/4f46e5?text=${encodeURIComponent(basePath.split('/').pop())}`;
                     return;
                 }
@@ -608,13 +666,12 @@
         }
 
         // ====================================================================
-        // EXERCISE LOADER & RENDERING
+        // CARGADOR DE EJERCICIO ACTUAL
         // ====================================================================
         function loadCurrentExercise() {
             if (exercises.length === 0) return;
             const ex = exercises[currentIndex];
             
-            // Resolve Image Path recursively
             const imgEl = document.getElementById('exerciseImage');
             resolveImageWithExtensions(imgEl, ex.imagePath);
             
@@ -628,46 +685,36 @@
 
             document.getElementById('activityVerb').innerText = `${ex.verb} (${ex.desc})`;
 
-            // Load Tab contents
             document.getElementById('grammarQuestion').innerText = ex.grammarQuestion;
             document.getElementById('questionsPrompt').innerText = ex.questionPrompt;
             document.getElementById('shadowingTargetText').innerText = ex.shadowingPhrase;
 
-            // Reset inputs & feedback divs & button transform states
             grammarChecked = false;
             questionChecked = false;
             resetTabState();
             updateVerifyButtonsUI();
-
-            // Render overall progress markers
             updateProgressUI();
         }
 
         function resetTabState() {
-            // Grammar
             const gramInput = document.getElementById('grammarInput');
             gramInput.value = "";
             gramInput.className = "flex-1 text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20 text-slate-950 dark:text-white";
             document.getElementById('grammarFeedback').className = "hidden p-4 rounded-xl border flex items-start space-x-3 transition-all";
             
-            // Questions
             const quesInput = document.getElementById('questionsInput');
             quesInput.value = "";
             quesInput.className = "flex-1 text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20 text-slate-950 dark:text-white";
             document.getElementById('questionsFeedback').className = "hidden p-4 rounded-xl border flex items-start space-x-3 transition-all";
 
-            // Shadowing
             document.getElementById('shadowingResultContainer').className = "hidden w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all";
             document.getElementById('speechLiveOutput').innerText = "";
             
-            // Stop dictations and speech recordings safely
             stopSpeechRecordingSilently();
             stopDictationRecordingSilently();
         }
 
-        // Sets the verify buttons back to initial check states
         function updateVerifyButtonsUI() {
-            // Grammar tab button restoration
             const gramBtn = document.getElementById('grammarCheckBtn');
             const gramIcon = document.getElementById('grammarBtnIcon');
             const gramText = document.getElementById('grammarBtnText');
@@ -676,7 +723,6 @@
             gramIcon.className = "fa-solid fa-circle-check";
             gramText.innerText = "Verificar Respuesta";
 
-            // Questions tab button restoration
             const quesBtn = document.getElementById('questionCheckBtn');
             const quesIcon = document.getElementById('questionBtnIcon');
             const quesText = document.getElementById('questionBtnText');
@@ -687,18 +733,14 @@
         }
 
         function updateProgressUI() {
-            // Label
             document.getElementById('progressLabel').innerText = `${currentIndex + 1} de ${exercises.length}`;
             
-            // Progress Bar
             const percent = ((currentIndex + 1) / exercises.length) * 100;
             document.getElementById('progressBar').style.width = `${percent}%`;
 
-            // Scoreboard totals
             const grammarCorrectCount = Object.values(score.grammar).filter(v => v === true).length;
             const questionsCorrectCount = Object.values(score.questions).filter(v => v === true).length;
             
-            // Shadowing Average
             const shadowingVals = Object.values(score.shadowing);
             let shadowingAvg = 0;
             if (shadowingVals.length > 0) {
@@ -714,15 +756,17 @@
         function nextExercise() {
             if (currentIndex < exercises.length - 1) {
                 currentIndex++;
+                saveProgressToLocalStorage();
                 loadCurrentExercise();
             } else {
-                showToast("¡Has completado el último ejercicio! Revisa tu progreso o compártelo.", "info");
+                showToast("¡Has completado el último ejercicio! Revisa tu progreso.", "info");
             }
         }
 
         function prevExercise() {
             if (currentIndex > 0) {
                 currentIndex--;
+                saveProgressToLocalStorage();
                 loadCurrentExercise();
             } else {
                 showToast("Ya estás en el primer ejercicio.", "info");
@@ -730,12 +774,10 @@
         }
 
         // ====================================================================
-        // TAB SWAP SYSTEM
+        // SISTEMA DE NAVEGACIÓN ENTRE TABS
         // ====================================================================
         function switchTab(tabId) {
             activeTab = tabId;
-            
-            // Setup standard styles
             const tabs = ['grammar', 'questions', 'shadowing'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tabBtn-${t}`);
@@ -745,7 +787,6 @@
                     content.classList.remove('hidden');
                     content.classList.add('flex');
                     
-                    // Set active colors
                     if (tabId === 'grammar') {
                         btn.className = "flex-1 py-3 text-center text-sm font-bold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-white bg-indigo-600 shadow-sm";
                     } else if (tabId === 'questions') {
@@ -760,27 +801,23 @@
                 }
             });
 
-            // Stop any ongoing speech recording gracefully when switching
             stopSpeechRecordingSilently();
             stopDictationRecordingSilently();
         }
 
         // ====================================================================
-        // TAB 1: GRAMMAR VALIDATION (Strict Present Continuous Contraction)
+        // TAB 1: VERIFICACIÓN GRAMATICAL (Con auto-guardado)
         // ====================================================================
         function cleanString(str) {
             return str.toLowerCase().trim()
-                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "") // remove punctuation
-                .replace(/\s+/g, " "); // collapse double spaces
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "") 
+                .replace(/\s+/g, " "); 
         }
 
-        // Unifies Check Answer + Next Flow
         function handleGrammarAction() {
             if (grammarChecked) {
-                // If already checked, button is in 'Siguiente' mode
                 nextExercise();
             } else {
-                // Otherwise validate student answer
                 checkGrammarAnswer();
             }
         }
@@ -790,8 +827,8 @@
             const studentInput = document.getElementById('grammarInput').value;
             const inputCleaned = cleanString(studentInput);
             
-            const targetCleanedPrimary = cleanString(ex.grammarAnswerPrimary); // contracted target
-            const targetCleanedFull = cleanString(ex.grammarAnswerFull);       // full target
+            const targetCleanedPrimary = cleanString(ex.grammarAnswerPrimary); 
+            const targetCleanedFull = cleanString(ex.grammarAnswerFull);       
 
             const feedbackDiv = document.getElementById('grammarFeedback');
             const feedbackIcon = document.getElementById('grammarFeedbackIcon');
@@ -804,7 +841,6 @@
                 return;
             }
 
-            // Perfect contracted match
             if (inputCleaned === targetCleanedPrimary) {
                 score.grammar[currentIndex] = true;
                 
@@ -816,9 +852,8 @@
                 inputField.className = "flex-1 text-lg font-semibold border-2 border-emerald-500 dark:border-emerald-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-emerald-50/20 dark:bg-emerald-950/20 text-slate-950 dark:text-white";
                 showToast("¡Gramática Perfecta!", "success");
             } 
-            // Correct but missing contraction
             else if (inputCleaned === targetCleanedFull) {
-                score.grammar[currentIndex] = false; // Enforcing contraction for fluency development
+                score.grammar[currentIndex] = false; 
                 
                 feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300";
                 feedbackIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-500 dark:text-amber-400"></i>';
@@ -827,7 +862,6 @@
                 
                 inputField.className = "flex-1 text-lg font-semibold border-2 border-amber-500 dark:border-amber-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-amber-50/20 dark:bg-amber-950/20 text-slate-950 dark:text-white";
             } 
-            // Incorrect response
             else {
                 score.grammar[currentIndex] = false;
                 
@@ -840,10 +874,8 @@
                 showToast("Revisa la estructura correcta.", "error");
             }
 
-            // Flag marked to convert Verify into Next button
             grammarChecked = true;
             
-            // Transform Button dynamically
             const gramBtn = document.getElementById('grammarCheckBtn');
             const gramIcon = document.getElementById('grammarBtnIcon');
             const gramText = document.getElementById('grammarBtnText');
@@ -852,19 +884,18 @@
             gramIcon.className = "fa-solid fa-arrow-right";
             gramText.innerText = "Siguiente Ejercicio";
 
+            saveProgressToLocalStorage(); // Auto-guardado local instantáneo
             updateProgressUI();
             autoSyncIfPossible();
         }
 
         // ====================================================================
-        // TAB 2: QUESTIONS VALIDATION (Confirming actions)
+        // TAB 2: CREACIÓN DE PREGUNTAS (Con auto-guardado)
         // ====================================================================
         function handleQuestionAction() {
             if (questionChecked) {
-                // If already checked, button is in 'Siguiente' mode
                 nextExercise();
             } else {
-                // Otherwise validate student question
                 checkQuestionAnswer();
             }
         }
@@ -908,10 +939,8 @@
                 showToast("Revisa la estructura de la pregunta.", "error");
             }
 
-            // Flag marked to convert Verify into Next button
             questionChecked = true;
 
-            // Transform Button dynamically
             const quesBtn = document.getElementById('questionCheckBtn');
             const quesIcon = document.getElementById('questionBtnIcon');
             const quesText = document.getElementById('questionBtnText');
@@ -920,12 +949,13 @@
             quesIcon.className = "fa-solid fa-arrow-right";
             quesText.innerText = "Siguiente Ejercicio";
 
+            saveProgressToLocalStorage(); // Guardado local instantáneo
             updateProgressUI();
             autoSyncIfPossible();
         }
 
         // ====================================================================
-        // SPEECH RECOGNITION FOR INPUT DICTATION (Grammar & Questions)
+        // RECONOCIMIENTO DE VOZ PARA DICTADO
         // ====================================================================
         function initDictationRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -954,7 +984,6 @@
                 const targetInput = document.getElementById(activeDictationInputId);
                 if (targetInput) {
                     targetInput.value = resultText;
-                    // Trigger input change visually
                     targetInput.focus();
                 }
                 showToast("Texto transcrito correctamente.", "success");
@@ -981,23 +1010,20 @@
                 return;
             }
 
-            // If recording the same element, stop it.
             if (isRecordingDictation && activeDictationInputId === inputId) {
                 dictationRecognition.stop();
                 return;
             }
 
-            // Stop ongoing dictation if clicking another input mic
             if (isRecordingDictation) {
                 dictationRecognition.stop();
             }
 
-            // Setup new active target context
             activeDictationInputId = inputId;
             activeDictationBtnId = btnId;
 
             try {
-                window.speechSynthesis.cancel(); // Stop playing guides before recording dictation
+                window.speechSynthesis.cancel(); 
                 dictationRecognition.start();
             } catch(e) {
                 console.error("Dictado fallido:", e);
@@ -1023,7 +1049,7 @@
         }
 
         // ====================================================================
-        // TAB 3: SHADOWING, TTS & SPEECH COMPARATOR (Speech to Text API)
+        // TAB 3: SHADOWING Y EVALUACIÓN DE PRONUNCIACIÓN (Con auto-guardado)
         // ====================================================================
         function setSpeechSpeed(speed) {
             speechSpeed = speed;
@@ -1113,7 +1139,6 @@
             }
         }
 
-        // Restores Mic UI
         function stopSpeechRecordingUI() {
             isRecordingSpeech = false;
             const micBtn = document.getElementById('micBtn');
@@ -1204,6 +1229,7 @@
                 resFeedback.innerText = "Haz clic en el altavoz para oírlo a velocidad lenta e inténtalo de nuevo.";
             }
 
+            saveProgressToLocalStorage(); // Guardar avance de voz localmente
             updateProgressUI();
             autoSyncIfPossible();
         }
@@ -1227,6 +1253,7 @@
 
         function applyManualShadowingScore(percent) {
             score.shadowing[currentIndex] = percent;
+            saveProgressToLocalStorage(); // Guardado local instantáneo
             updateProgressUI();
             
             const resDiv = document.getElementById('shadowingResultContainer');
@@ -1252,7 +1279,7 @@
         }
 
         // ====================================================================
-        // GOOGLE SHEETS SYNC SYSTEM (Bypassing CORS completely using secure no-cors redirection)
+        // ENVÍO DE DATOS A GOOGLE SHEETS
         // ====================================================================
         async function sendStudentProgressToSheets() {
             if (!sheetsWebUrl) return;
@@ -1277,8 +1304,9 @@
                 progreso: `${currentIndex + 1} de ${exercises.length} completados`
             };
 
+            showToast("Estableciendo conexión...", "info");
+
             try {
-                // IMPORTANT: Google Apps Script redirections are solved securely using fetch with 'no-cors' mode and clean JSON payloads
                 await fetch(sheetsWebUrl, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1286,26 +1314,20 @@
                 });
 
                 showToast("¡Progreso enviado a la nube con éxito!", "success");
-                
-                const indicator = document.getElementById('syncIndicatorStatus');
-                if (indicator) {
-                    indicator.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Sincronizado';
-                    indicator.className = "text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1";
-                }
             } catch (error) {
                 console.error("Estado de envío de datos:", error);
-                showToast("Guardado localmente. Revisa el despliegue del Script.", "info");
+                showToast("Guardado localmente de forma segura.", "info");
             }
         }
 
         function autoSyncIfPossible() {
-            if (sheetsWebUrl) {
+            if (sheetsWebUrl && currentStudent.isAuthenticated) {
                 sendStudentProgressToSheets();
             }
         }
 
         // ====================================================================
-        // MODALS & AUTHENTICATION HANDLING
+        // AUTENTICACIÓN Y GESTIÓN DE PERFIL
         // ====================================================================
         function openManualLoginModal() {
             document.getElementById('manualLoginModal').classList.remove('hidden');
@@ -1328,7 +1350,6 @@
             currentStudent.email = email;
             currentStudent.isAuthenticated = true;
 
-            // Save to LocalStorage
             localStorage.setItem('studentName', name);
             localStorage.setItem('studentEmail', email);
 
@@ -1351,23 +1372,15 @@
         }
 
         function updateStudentUI() {
-            // Header Info
             document.getElementById('studentName').innerText = currentStudent.name;
             document.getElementById('studentEmail').innerText = currentStudent.email;
             document.getElementById('studentContainer').classList.remove('hidden');
             document.getElementById('manualLoginBtn').classList.add('hidden');
 
-            // Set Avatar Initials
             const initials = currentStudent.name.split(" ").map(n => n[0]).join("").substring(0,2).toUpperCase();
             document.getElementById('studentAvatarContainer').innerHTML = `<span class="text-xs font-extrabold text-indigo-700 dark:text-indigo-300">${initials}</span>`;
-            
-            // Tracker Card Info
-            document.getElementById('trackerName').innerText = currentStudent.name;
-            document.getElementById('trackerEmail').innerText = currentStudent.email;
-            document.getElementById('trackerAvatar').innerHTML = `<span class="text-lg font-bold text-slate-300">${initials}</span>`;
         }
 
-        // GOOGLE SIGN-IN HANDLER CALLBACK
         function handleCredentialResponse(response) {
             try {
                 const base64Url = response.credential.split('.')[1];
@@ -1394,7 +1407,6 @@
             }
         }
 
-        // Initialize Google Sign-In SDK
         window.onload = function () {
             if (typeof google !== 'undefined' && google.accounts) {
                 google.accounts.id.initialize({
@@ -1409,13 +1421,12 @@
         }
 
         function updateSyncIndicator() {
-            const syncLabelStatus = document.getElementById('syncIndicatorStatus');
-            syncLabelStatus.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Sincronizado';
-            syncLabelStatus.className = "text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1";
+            // Sincronización automática de indicadores locales heredados
+            console.log("Sistema de guardado local activo.");
         }
 
         // ====================================================================
-        // DARK MODE SYSTEM CONTROLS
+        // MODO OSCURO
         // ====================================================================
         function toggleDarkMode() {
             if (document.documentElement.classList.contains('dark')) {
@@ -1428,7 +1439,7 @@
         }
 
         // ====================================================================
-        // TOAST NOTIFICATIONS POPUP SYSTEM
+        // TOASTS DE NOTIFICACIÓN
         // ====================================================================
         let toastTimeout;
         function showToast(message, type = "info") {
