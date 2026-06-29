@@ -209,7 +209,7 @@
                         <div class="space-y-2 pt-2">
                             <label for="grammarInput" class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tu Respuesta (en inglés):</label>
                             <div class="flex space-x-2">
-                                <input type="text" id="grammarInput" placeholder="Escribe tu respuesta aquí..." class="flex-1 text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20" onkeydown="if(event.key === 'Enter') checkGrammarAnswer()">
+                                <input type="text" id="grammarInput" placeholder="Escribe tu respuesta aquí..." class="flex-1 text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20" onkeydown="if(event.key === 'Enter') handleGrammarAction()">
                                 <button id="grammarDictateBtn" onclick="toggleAnswerDictation('grammarInput', 'grammarDictateBtn')" class="px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl transition-all flex items-center justify-center focus:outline-none" title="Dictar respuesta">
                                     <i class="fa-solid fa-microphone text-lg"></i>
                                 </button>
@@ -227,8 +227,8 @@
                     </div>
 
                     <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                        <button onclick="checkGrammarAnswer()" id="grammarCheckBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-check"></i> <span>Verificar Respuesta</span>
+                        <button onclick="handleGrammarAction()" id="grammarCheckBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2">
+                            <i id="grammarBtnIcon" class="fa-solid fa-circle-check"></i> <span id="grammarBtnText">Verificar Respuesta</span>
                         </button>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
                         <div class="space-y-2 pt-2">
                             <label for="questionsInput" class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tu Pregunta (en inglés):</label>
                             <div class="flex space-x-2">
-                                <input type="text" id="questionsInput" placeholder="Is he... ? / Are they... ?" class="flex-1 text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20" onkeydown="if(event.key === 'Enter') checkQuestionAnswer()">
+                                <input type="text" id="questionsInput" placeholder="Is he... ? / Are they... ?" class="flex-1 text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20" onkeydown="if(event.key === 'Enter') handleQuestionAction()">
                                 <button id="questionsDictateBtn" onclick="toggleAnswerDictation('questionsInput', 'questionsDictateBtn')" class="px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl transition-all flex items-center justify-center focus:outline-none" title="Dictar pregunta">
                                     <i class="fa-solid fa-microphone text-lg"></i>
                                 </button>
@@ -269,8 +269,8 @@
                     </div>
 
                     <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                        <button onclick="checkQuestionAnswer()" id="questionCheckBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-check"></i> <span>Verificar Pregunta</span>
+                        <button onclick="handleQuestionAction()" id="questionCheckBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2">
+                            <i id="questionBtnIcon" class="fa-solid fa-circle-check"></i> <span id="questionBtnText">Verificar Pregunta</span>
                         </button>
                     </div>
                 </div>
@@ -566,6 +566,10 @@
         let activeDictationInputId = null;
         let activeDictationBtnId = null;
         let isRecordingDictation = false;
+
+        // Button State Trackers for dynamic transform
+        let grammarChecked = false;
+        let questionChecked = false;
         
         // Progress Scores
         let score = {
@@ -660,8 +664,11 @@
             document.getElementById('questionsPrompt').innerText = ex.questionPrompt;
             document.getElementById('shadowingTargetText').innerText = ex.shadowingPhrase;
 
-            // Reset inputs & feedback divs
+            // Reset inputs & feedback divs & button transform states
+            grammarChecked = false;
+            questionChecked = false;
             resetTabState();
+            updateVerifyButtonsUI();
 
             // Render overall progress markers
             updateProgressUI();
@@ -687,6 +694,27 @@
             // Stop dictations and speech recordings safely
             stopSpeechRecordingSilently();
             stopDictationRecordingSilently();
+        }
+
+        // Sets the verify buttons back to initial check states
+        function updateVerifyButtonsUI() {
+            // Grammar tab button restoration
+            const gramBtn = document.getElementById('grammarCheckBtn');
+            const gramIcon = document.getElementById('grammarBtnIcon');
+            const gramText = document.getElementById('grammarBtnText');
+            
+            gramBtn.className = "bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2";
+            gramIcon.className = "fa-solid fa-circle-check";
+            gramText.innerText = "Verificar Respuesta";
+
+            // Questions tab button restoration
+            const quesBtn = document.getElementById('questionCheckBtn');
+            const quesIcon = document.getElementById('questionBtnIcon');
+            const quesText = document.getElementById('questionBtnText');
+            
+            quesBtn.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2";
+            quesIcon.className = "fa-solid fa-circle-check";
+            quesText.innerText = "Verificar Pregunta";
         }
 
         function updateProgressUI() {
@@ -777,6 +805,17 @@
                 .replace(/\s+/g, " "); // collapse double spaces
         }
 
+        // Unifies Check Answer + Next Flow
+        function handleGrammarAction() {
+            if (grammarChecked) {
+                // If already checked, button is in 'Siguiente' mode
+                nextExercise();
+            } else {
+                // Otherwise validate student answer
+                checkGrammarAnswer();
+            }
+        }
+
         function checkGrammarAnswer() {
             const ex = exercises[currentIndex];
             const studentInput = document.getElementById('grammarInput').value;
@@ -832,6 +871,18 @@
                 showToast("Revisa la estructura correcta.", "error");
             }
 
+            // Flag marked to convert Verify into Next button
+            grammarChecked = true;
+            
+            // Transform Button dynamically
+            const gramBtn = document.getElementById('grammarCheckBtn');
+            const gramIcon = document.getElementById('grammarBtnIcon');
+            const gramText = document.getElementById('grammarBtnText');
+            
+            gramBtn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2 animate-pulse";
+            gramIcon.className = "fa-solid fa-arrow-right";
+            gramText.innerText = "Siguiente Ejercicio";
+
             updateProgressUI();
             autoSyncIfPossible();
         }
@@ -839,6 +890,16 @@
         // ====================================================================
         // TAB 2: QUESTIONS VALIDATION (Confirming actions)
         // ====================================================================
+        function handleQuestionAction() {
+            if (questionChecked) {
+                // If already checked, button is in 'Siguiente' mode
+                nextExercise();
+            } else {
+                // Otherwise validate student question
+                checkQuestionAnswer();
+            }
+        }
+
         function checkQuestionAnswer() {
             const ex = exercises[currentIndex];
             const studentInput = document.getElementById('questionsInput').value;
@@ -874,9 +935,21 @@
                 feedbackTitle.innerText = "Estructura Incorrecta";
                 feedbackDesc.innerHTML = `Para hacer preguntas cerradas (Yes/No) en Present Continuous, coloca el verbo <b>Am/Is/Are</b> al principio de la oración, seguido del pronombre y la acción terminando en <b>-ing</b>. <br><b>La forma correcta es:</b> <span class="font-extrabold text-slate-900 dark:text-white underline">${ex.questionAnswerPrimary}</span>`;
                 
-                inputField.className = "flex-1 text-lg font-semibold border-2 border-rose-500 dark:border-rose-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-rose-50/20 dark:bg-rose-950/20 text-slate-950 dark:text-white";
+                inputField.className = "flex-1 text-lg font-semibold border-2 border-rose-500 dark:border-rose-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-rose-50/20 dark:bg-slate-950/20 text-slate-950 dark:text-white";
                 showToast("Revisa la estructura de la pregunta.", "error");
             }
+
+            // Flag marked to convert Verify into Next button
+            questionChecked = true;
+
+            // Transform Button dynamically
+            const quesBtn = document.getElementById('questionCheckBtn');
+            const quesIcon = document.getElementById('questionBtnIcon');
+            const quesText = document.getElementById('questionBtnText');
+            
+            quesBtn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2 animate-pulse";
+            quesIcon.className = "fa-solid fa-arrow-right";
+            quesText.innerText = "Siguiente Ejercicio";
 
             updateProgressUI();
             autoSyncIfPossible();
@@ -1071,6 +1144,7 @@
             }
         }
 
+        // Restores Mic UI
         function stopSpeechRecordingUI() {
             isRecordingSpeech = false;
             const micBtn = document.getElementById('micBtn');
@@ -1235,11 +1309,10 @@
             };
 
             try {
-                // IMPORTANT: Google Apps Script redirections are solved securely using fetch with 'no-cors' mode!
+                // IMPORTANT: Google Apps Script redirections are solved securely using fetch with 'no-cors' mode and clean JSON payloads
                 await fetch(sheetsWebUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
 
@@ -1247,12 +1320,12 @@
                 
                 const indicator = document.getElementById('syncIndicatorStatus');
                 if (indicator) {
-                    indicator.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span> Sincronizado';
+                    indicator.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Sincronizado';
                     indicator.className = "text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1";
                 }
             } catch (error) {
                 console.error("Estado de envío de datos:", error);
-                showToast("Progreso registrado localmente de forma segura.", "success");
+                showToast("Guardado localmente. Revisa el despliegue del Script.", "info");
             }
         }
 
@@ -1368,7 +1441,7 @@
 
         function updateSyncIndicator() {
             const syncLabelStatus = document.getElementById('syncIndicatorStatus');
-            syncLabelStatus.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span> Sincronizado';
+            syncLabelStatus.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Sincronizado';
             syncLabelStatus.className = "text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1";
         }
 
