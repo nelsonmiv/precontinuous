@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-50">
+<html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Present Continuous Master - Practice English & Track Progress</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración de Tailwind para soportar modo oscuro por clase
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <!-- Google Fonts & FontAwesome Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,46 +30,54 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
         }
     </style>
+    <script>
+        // Inicializar el tema antes de renderizar la página
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="h-full flex flex-col text-slate-800">
+<body class="h-full flex flex-col text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
 
     <!-- HEADER / NAVIGATION -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 shadow-sm transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200 dark:shadow-none">
                     <i class="fa-solid fa-person-running text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold text-slate-900 tracking-tight leading-tight">Continuous Master</h1>
-                    <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Nivel A1 - Práctica Activa</span>
+                    <h1 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-tight">Continuous Master</h1>
+                    <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50 dark:text-indigo-400 px-2 py-0.5 rounded-full">Nivel A1 - Práctica Activa</span>
                 </div>
             </div>
 
-            <!-- Student Profile / Sync Button -->
-            <div class="flex items-center space-x-4">
-                <!-- Sync Sheets Webhook Config Button -->
-                <button onclick="openSyncModal()" class="text-slate-500 hover:text-indigo-600 p-2 rounded-lg transition-colors relative" title="Configurar Google Sheets">
-                    <i class="fa-solid fa-circle-nodes text-lg"></i>
-                    <span id="syncIndicator" class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full"></span>
+            <!-- Student Profile / Theme / Auth -->
+            <div class="flex items-center space-x-3">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleDarkMode()" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all" title="Cambiar Tema">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg dark:hidden"></i>
+                    <i id="themeIconDark" class="fa-solid fa-sun text-lg hidden dark:inline"></i>
                 </button>
 
-                <!-- Student Info Section -->
-                <div id="studentContainer" class="hidden md:flex items-center space-x-3 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                <!-- Student Info Section (Visible if signed in) -->
+                <div id="studentContainer" class="hidden md:flex items-center space-x-3 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
                     <div class="text-right">
-                        <p id="studentName" class="text-xs font-bold text-slate-900"></p>
-                        <p id="studentEmail" class="text-[10px] text-slate-500"></p>
+                        <p id="studentName" class="text-xs font-bold text-slate-900 dark:text-white"></p>
+                        <p id="studentEmail" class="text-[10px] text-slate-500 dark:text-slate-400"></p>
                     </div>
-                    <div id="studentAvatarContainer" class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-                        <i class="fa-solid fa-user text-indigo-600 text-sm"></i>
+                    <div id="studentAvatarContainer" class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center overflow-hidden">
+                        <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-sm"></i>
                     </div>
                 </div>
 
                 <!-- Google Auth Button Slot -->
                 <div id="g_id_signin" class="scale-90 sm:scale-100"></div>
                 
-                <!-- Guest manual sign-in button if Google Auth fails or is offline -->
-                <button id="manualLoginBtn" onclick="openManualLoginModal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-lg border border-slate-300 transition-colors">
+                <!-- Guest manual sign-in button if Google Auth is not used -->
+                <button id="manualLoginBtn" onclick="openManualLoginModal()" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 transition-colors">
                     <i class="fa-solid fa-signature mr-1"></i> Identificarse
                 </button>
             </div>
@@ -77,64 +91,64 @@
         <section class="lg:col-span-5 flex flex-col space-y-6">
             
             <!-- EXERCISE PANEL & CARD -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-850 shadow-sm overflow-hidden flex flex-col transition-colors">
                 <!-- Progress & Score Header -->
-                <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <div class="p-4 bg-slate-50 dark:bg-slate-850/50 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center transition-colors">
                     <div>
-                        <span class="text-xs font-semibold text-slate-500">PROGRESO EJERCICIO</span>
-                        <p id="progressLabel" class="text-lg font-bold text-slate-900">1 de 100</p>
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">PROGRESO EJERCICIO</span>
+                        <p id="progressLabel" class="text-lg font-bold text-slate-900 dark:text-white">1 de 100</p>
                     </div>
                     <div class="text-right">
-                        <span class="text-xs font-semibold text-slate-500">PUNTUACIÓN GLOBAL</span>
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">PUNTUACIÓN GLOBAL</span>
                         <div class="flex items-center space-x-2 justify-end">
-                            <span class="text-sm font-bold text-emerald-600" title="Gramática Correctas"><i class="fa-regular fa-circle-check mr-1"></i><span id="scoreGrammar">0</span></span>
-                            <span class="text-slate-300">|</span>
-                            <span class="text-sm font-bold text-blue-600" title="Preguntas Correctas"><i class="fa-regular fa-circle-question mr-1"></i><span id="scoreQuestions">0</span></span>
-                            <span class="text-slate-300">|</span>
-                            <span class="text-sm font-bold text-purple-600" title="Shadowing Promedio"><i class="fa-solid fa-microphone mr-1"></i><span id="scoreShadowing">0%</span></span>
+                            <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400" title="Gramática Correctas"><i class="fa-regular fa-circle-check mr-1"></i><span id="scoreGrammar">0</span></span>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <span class="text-sm font-bold text-blue-600 dark:text-blue-400" title="Preguntas Correctas"><i class="fa-regular fa-circle-question mr-1"></i><span id="scoreQuestions">0</span></span>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <span class="text-sm font-bold text-purple-600 dark:text-purple-400" title="Shadowing Promedio"><i class="fa-solid fa-microphone mr-1"></i><span id="scoreShadowing">0%</span></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="w-full bg-slate-100 h-1.5">
+                <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 transition-colors">
                     <div id="progressBar" class="bg-indigo-600 h-1.5 rounded-r-full transition-all duration-300" style="width: 1%;"></div>
                 </div>
 
                 <!-- Main Activity Image Container -->
-                <div class="p-6 flex flex-col items-center justify-center flex-1 min-h-[260px] bg-slate-50 relative group">
+                <div class="p-6 flex flex-col items-center justify-center flex-1 min-h-[260px] bg-slate-50 dark:bg-slate-950/30 relative group transition-colors">
                     <!-- Image Category Pill -->
                     <span id="categoryPill" class="absolute top-4 left-4 text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm">
                         Cargando...
                     </span>
                     
-                    <div class="w-64 h-64 bg-white rounded-2xl border border-slate-200 shadow-inner overflow-hidden flex items-center justify-center p-2 relative">
+                    <div class="w-64 h-64 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner overflow-hidden flex items-center justify-center p-2 relative transition-colors">
                         <img id="exerciseImage" src="" alt="Cargando ejercicio..." class="max-w-full max-h-full object-contain rounded-xl" onerror="handleImageLoadError(this)">
                     </div>
 
                     <!-- Action Details Display -->
                     <div class="mt-4 text-center">
-                        <p id="activityVerb" class="text-sm font-bold text-slate-500 uppercase tracking-widest"></p>
+                        <p id="activityVerb" class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest"></p>
                     </div>
                 </div>
 
                 <!-- Navigation Controls -->
-                <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between">
-                    <button onclick="prevExercise()" class="flex items-center space-x-1 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all">
+                <div class="p-4 bg-slate-50 dark:bg-slate-850/50 border-t border-slate-200 dark:border-slate-800 flex justify-between transition-colors">
+                    <button onclick="prevExercise()" class="flex items-center space-x-1 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all">
                         <i class="fa-solid fa-arrow-left"></i> <span>Anterior</span>
                     </button>
-                    <button onclick="nextExercise()" class="flex items-center space-x-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm shadow-indigo-100 transition-all">
+                    <button onclick="nextExercise()" class="flex items-center space-x-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm shadow-indigo-100 dark:shadow-none transition-all">
                         <span>Siguiente</span> <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
             </div>
 
             <!-- STUDENT TRACKER CARD -->
-            <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-md flex flex-col space-y-4">
+            <div class="bg-slate-900 dark:bg-slate-900 text-white rounded-2xl p-5 shadow-md flex flex-col space-y-4 border border-transparent dark:border-slate-800">
                 <div class="flex items-center justify-between">
                     <h3 class="font-bold text-sm tracking-wide text-slate-400">TARJETA DEL ESTUDIANTE</h3>
-                    <span id="syncIndicatorStatus" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full flex items-center space-x-1">
-                        <span class="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5"></span> Sin Nube
+                    <span id="syncIndicatorStatus" class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span> Sincronizado
                     </span>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -147,7 +161,7 @@
                     </div>
                 </div>
                 <div class="border-t border-slate-800 pt-3 flex justify-between items-center text-xs text-slate-400">
-                    <span>Estado: <b class="text-indigo-400">Practicando</b></span>
+                    <span>Estado: <b class="text-indigo-400 dark:text-indigo-300">Practicando</b></span>
                     <button onclick="sendStudentProgressToSheets()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-md transition-colors flex items-center space-x-1 shadow-sm">
                         <i class="fa-solid fa-cloud-arrow-up"></i> <span>Guardar Ahora</span>
                     </button>
@@ -159,42 +173,42 @@
         <section class="lg:col-span-7 flex flex-col space-y-6">
 
             <!-- TABS NAVIGATION -->
-            <nav class="flex space-x-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <nav class="flex space-x-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors">
                 <button onclick="switchTab('grammar')" id="tabBtn-grammar" class="flex-1 py-3 text-center text-sm font-bold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-white bg-indigo-600 shadow-sm">
                     <i class="fa-solid fa-spell-check text-base"></i>
                     <span>1. Gramática</span>
                 </button>
-                <button onclick="switchTab('questions')" id="tabBtn-questions" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-900 hover:bg-white/50">
+                <button onclick="switchTab('questions')" id="tabBtn-questions" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800">
                     <i class="fa-solid fa-circle-question text-base"></i>
                     <span>2. Preguntas</span>
                 </button>
-                <button onclick="switchTab('shadowing')" id="tabBtn-shadowing" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-900 hover:bg-white/50">
+                <button onclick="switchTab('shadowing')" id="tabBtn-shadowing" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800">
                     <i class="fa-solid fa-microphone text-base"></i>
                     <span>3. Shadowing</span>
                 </button>
             </nav>
 
             <!-- TAB CONTENT AREA -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex-1 min-h-[400px] flex flex-col">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 flex-1 min-h-[400px] flex flex-col transition-colors">
                 
                 <!-- TAB 1: GRAMMAR PRACTICE -->
                 <div id="tabContent-grammar" class="flex-col flex-1 flex justify-between space-y-6">
                     <div class="space-y-4">
-                        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
-                            <h4 class="font-bold text-indigo-900 text-sm mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Ejercicio de Present Continuous</h4>
-                            <p class="text-xs text-indigo-700 leading-relaxed">
+                        <div class="bg-indigo-50 dark:bg-indigo-950/30 border-l-4 border-indigo-500 p-4 rounded-r-lg transition-colors">
+                            <h4 class="font-bold text-indigo-900 dark:text-indigo-200 text-sm mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Ejercicio de Present Continuous</h4>
+                            <p class="text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
                                 Responde la pregunta en inglés sobre lo que se observa en la imagen. Recuerda utilizar <b>respuestas completas y contracciones</b> (e.g., <i>He's...</i> o <i>They're...</i>).
                             </p>
                         </div>
                         
                         <div class="space-y-2">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Pregunta de Gramática:</label>
-                            <p id="grammarQuestion" class="text-xl font-extrabold text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-200"></p>
+                            <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pregunta de Gramática:</label>
+                            <p id="grammarQuestion" class="text-xl font-extrabold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors"></p>
                         </div>
 
                         <div class="space-y-2 pt-2">
-                            <label for="grammarInput" class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Tu Respuesta (en inglés):</label>
-                            <input type="text" id="grammarInput" placeholder="Escribe tu respuesta aquí..." class="w-full text-lg font-semibold border-2 border-slate-200 rounded-xl px-4 py-3 focus:border-indigo-600 focus:ring-0 transition-colors bg-slate-50/50" onkeydown="if(event.key === 'Enter') checkGrammarAnswer()">
+                            <label for="grammarInput" class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tu Respuesta (en inglés):</label>
+                            <input type="text" id="grammarInput" placeholder="Escribe tu respuesta aquí..." class="w-full text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20" onkeydown="if(event.key === 'Enter') checkGrammarAnswer()">
                         </div>
 
                         <!-- Feedback Box -->
@@ -207,7 +221,7 @@
                         </div>
                     </div>
 
-                    <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                         <button onclick="checkGrammarAnswer()" id="grammarCheckBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2">
                             <i class="fa-solid fa-circle-check"></i> <span>Verificar Respuesta</span>
                         </button>
@@ -217,21 +231,21 @@
                 <!-- TAB 2: QUESTIONS CREATION -->
                 <div id="tabContent-questions" class="hidden flex-col flex-1 flex justify-between space-y-6">
                     <div class="space-y-4">
-                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                            <h4 class="font-bold text-blue-900 text-sm mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Crear una Pregunta de Sí/No</h4>
-                            <p class="text-xs text-blue-700 leading-relaxed">
+                        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-r-lg transition-colors">
+                            <h4 class="font-bold text-blue-900 dark:text-blue-200 text-sm mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Crear una Pregunta de Sí/No</h4>
+                            <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
                                 Escribe una pregunta formal de tipo <b>Yes/No Question</b> basada en el sujeto y la acción que se muestra en la imagen (e.g., <i>Is she dancing?</i> o <i>Are they running?</i>).
                             </p>
                         </div>
 
                         <div class="space-y-2">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Instrucción para Preguntar:</label>
-                            <p id="questionsPrompt" class="text-lg font-bold text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-200"></p>
+                            <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Instrucción para Preguntar:</label>
+                            <p id="questionsPrompt" class="text-lg font-bold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors"></p>
                         </div>
 
                         <div class="space-y-2 pt-2">
-                            <label for="questionsInput" class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Tu Pregunta (en inglés):</label>
-                            <input type="text" id="questionsInput" placeholder="Is he... ? / Are they... ?" class="w-full text-lg font-semibold border-2 border-slate-200 rounded-xl px-4 py-3 focus:border-blue-600 focus:ring-0 transition-colors bg-slate-50/50" onkeydown="if(event.key === 'Enter') checkQuestionAnswer()">
+                            <label for="questionsInput" class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tu Pregunta (en inglés):</label>
+                            <input type="text" id="questionsInput" placeholder="Is he... ? / Are they... ?" class="w-full text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20" onkeydown="if(event.key === 'Enter') checkQuestionAnswer()">
                         </div>
 
                         <!-- Feedback Box -->
@@ -244,7 +258,7 @@
                         </div>
                     </div>
 
-                    <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                         <button onclick="checkQuestionAnswer()" id="questionCheckBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2">
                             <i class="fa-solid fa-circle-check"></i> <span>Verificar Pregunta</span>
                         </button>
@@ -254,50 +268,50 @@
                 <!-- TAB 3: SHADOWING & PRONUNCIATION -->
                 <div id="tabContent-shadowing" class="hidden flex-col flex-1 flex justify-between space-y-6">
                     <div class="space-y-6">
-                        <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-lg">
-                            <h4 class="font-bold text-purple-900 text-sm mb-1"><i class="fa-solid fa-microphone mr-1"></i> Shadowing & Pronunciación</h4>
-                            <p class="text-xs text-purple-700 leading-relaxed">
+                        <div class="bg-purple-50 dark:bg-purple-950/30 border-l-4 border-purple-500 p-4 rounded-r-lg transition-colors">
+                            <h4 class="font-bold text-purple-900 dark:text-purple-200 text-sm mb-1"><i class="fa-solid fa-microphone mr-1"></i> Shadowing & Pronunciación</h4>
+                            <p class="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
                                 Escucha la oración modelo, repítela en voz alta usando tu micrófono y mide tu precisión. Ideal para estudiantes de nivel A1 que quieren pulir su fluidez.
                             </p>
                         </div>
 
                         <!-- Listen Control Box -->
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col space-y-4">
+                        <div class="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col space-y-4 transition-colors">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Paso 1: Escucha el Modelo</span>
+                                <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Paso 1: Escucha el Modelo</span>
                                 
                                 <!-- Speed Controls -->
-                                <div class="flex items-center space-x-1.5 bg-slate-200 p-1 rounded-lg">
-                                    <span class="text-[10px] font-bold text-slate-500 px-1.5">VELOCIDAD:</span>
-                                    <button onclick="setSpeechSpeed(0.5)" id="speedBtn-0.5" class="text-xs font-bold px-2 py-1 rounded hover:bg-white/50 text-slate-600 transition-all">0.5x</button>
-                                    <button onclick="setSpeechSpeed(0.75)" id="speedBtn-0.75" class="text-xs font-bold px-2 py-1 rounded hover:bg-white/50 text-slate-600 transition-all">0.75x</button>
+                                <div class="flex items-center space-x-1.5 bg-slate-200 dark:bg-slate-850 p-1 rounded-lg transition-colors">
+                                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 px-1.5">VELOCIDAD:</span>
+                                    <button onclick="setSpeechSpeed(0.5)" id="speedBtn-0.5" class="text-xs font-bold px-2 py-1 rounded hover:bg-white/50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all">0.5x</button>
+                                    <button onclick="setSpeechSpeed(0.75)" id="speedBtn-0.75" class="text-xs font-bold px-2 py-1 rounded hover:bg-white/50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all">0.75x</button>
                                     <button onclick="setSpeechSpeed(1.0)" id="speedBtn-1.0" class="text-xs font-bold px-2.5 py-1 rounded text-white bg-indigo-600 shadow-sm transition-all">1.0x</button>
                                 </div>
                             </div>
 
                             <!-- Target Audio Phrase -->
                             <div class="flex items-center space-x-4">
-                                <button onclick="speakTargetPhrase()" class="w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-indigo-100 hover:scale-105 active:scale-95 transition-all" title="Reproducir audio">
+                                <button onclick="speakTargetPhrase()" class="w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-indigo-100 dark:shadow-none hover:scale-105 active:scale-95 transition-all" title="Reproducir audio">
                                     <i class="fa-solid fa-volume-high text-xl"></i>
                                 </button>
                                 <div class="flex-1">
-                                    <p id="shadowingTargetText" class="text-xl font-extrabold text-indigo-900 tracking-tight"></p>
-                                    <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-headphones mr-1"></i> Repite esta oración exactamente como la escuchas.</p>
+                                    <p id="shadowingTargetText" class="text-xl font-extrabold text-indigo-900 dark:text-indigo-200 tracking-tight"></p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-headphones mr-1"></i> Repite esta oración exactamente como la escuchas.</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Record Control Box -->
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col items-center justify-center space-y-4 text-center">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider self-start">Paso 2: Graba y Evalúate</span>
+                        <div class="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center space-y-4 text-center transition-colors">
+                            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider self-start">Paso 2: Graba y Evalúate</span>
                             
                             <div class="flex flex-col items-center justify-center py-4">
                                 <!-- Mic Button with pulse animation when listening -->
-                                <button id="micBtn" onclick="toggleSpeechRecording()" class="w-16 h-16 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 focus:outline-none relative">
+                                <button id="micBtn" onclick="toggleSpeechRecording()" class="w-16 h-16 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 focus:outline-none relative">
                                     <i class="fa-solid fa-microphone text-2xl"></i>
                                 </button>
-                                <p id="micInstructions" class="text-sm font-bold text-slate-600 mt-3">Haz clic en el micrófono para empezar a hablar</p>
-                                <p id="speechLiveOutput" class="text-xs text-slate-400 italic mt-1 max-w-md"></p>
+                                <p id="micInstructions" class="text-sm font-bold text-slate-600 dark:text-slate-300 mt-3">Haz clic en el micrófono para empezar a hablar</p>
+                                <p id="speechLiveOutput" class="text-xs text-slate-400 dark:text-slate-500 italic mt-1 max-w-md"></p>
                             </div>
 
                             <!-- Shadowing Feedback Result -->
@@ -308,13 +322,13 @@
                                         <h5 id="shadowingResultStatus" class="font-extrabold text-sm"></h5>
                                         <span id="shadowingResultScore" class="text-xs font-bold px-2 py-0.5 rounded-full"></span>
                                     </div>
-                                    <p id="shadowingResultFeedback" class="text-xs mt-1 leading-relaxed text-slate-600"></p>
+                                    <p id="shadowingResultFeedback" class="text-xs mt-1 leading-relaxed text-slate-600 dark:text-slate-300"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="pt-6 border-t border-slate-100 flex justify-end">
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                         <button onclick="speakModelAndVoiceFeedback()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-3 rounded-xl shadow-sm transition-all flex items-center space-x-2">
                             <i class="fa-solid fa-circle-info"></i> <span>¿Cómo mejorar?</span>
                         </button>
@@ -326,72 +340,42 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-white border-t border-slate-200 py-4 mt-8">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 mt-8 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 dark:text-slate-500 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
             <p>&copy; 2026 Present Continuous Master - Práctica Interactiva en el Aula.</p>
             <p class="flex items-center space-x-2">
-                <span class="w-2 h-2 bg-emerald-500 rounded-full inline-block"></span>
+                <span class="w-2 h-2 bg-emerald-500 rounded-full inline-block animate-pulse"></span>
                 <span>Enlace de Google Sheets Sincronizado</span>
             </p>
         </div>
     </footer>
 
     <!-- MODAL: MANUAL STUDENT REGISTRATION (GUEST SIGN-IN) -->
-    <div id="manualLoginModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div class="p-6 border-b border-slate-100">
+    <div id="manualLoginModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                        <i class="fa-solid fa-user-graduate text-indigo-600"></i>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-user-graduate text-indigo-600 dark:text-indigo-400"></i>
                         <span>Registro Manual del Estudiante</span>
                     </h3>
-                    <button onclick="closeManualLoginModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    <button onclick="closeManualLoginModal()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
-                <p class="text-xs text-slate-500 mt-1">Ingresa tus datos para registrar tus puntuaciones en la planilla del profesor.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ingresa tus datos para registrar tus puntuaciones en la planilla del profesor.</p>
             </div>
             <div class="p-6 space-y-4">
                 <div class="space-y-1.5">
-                    <label for="manualNameInput" class="text-xs font-bold text-slate-500">Nombre Completo:</label>
-                    <input type="text" id="manualNameInput" placeholder="Ej. Juan Pérez" class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold focus:border-indigo-600 focus:ring-0">
+                    <label for="manualNameInput" class="text-xs font-bold text-slate-500 dark:text-slate-400">Nombre Completo:</label>
+                    <input type="text" id="manualNameInput" placeholder="Ej. Juan Pérez" class="w-full border-2 border-slate-200 dark:border-slate-850 rounded-lg px-3 py-2 text-sm font-semibold focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
                 </div>
                 <div class="space-y-1.5">
-                    <label for="manualEmailInput" class="text-xs font-bold text-slate-500">Correo Electrónico:</label>
-                    <input type="email" id="manualEmailInput" placeholder="Ej. juan@colegio.com" class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold focus:border-indigo-600 focus:ring-0">
+                    <label for="manualEmailInput" class="text-xs font-bold text-slate-500 dark:text-slate-400">Correo Electrónico:</label>
+                    <input type="email" id="manualEmailInput" placeholder="Ej. juan@colegio.com" class="w-full border-2 border-slate-200 dark:border-slate-850 rounded-lg px-3 py-2 text-sm font-semibold focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
                 </div>
             </div>
-            <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end space-x-2">
-                <button onclick="closeManualLoginModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancelar</button>
+            <div class="p-6 bg-slate-50 dark:bg-slate-850 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
+                <button onclick="closeManualLoginModal()" class="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancelar</button>
                 <button onclick="saveManualLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-xs font-bold rounded-lg shadow-sm transition-colors">Guardar Datos</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: CONFIGURE SHEET SYNC WEBHOOK -->
-    <div id="syncModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full shadow-xl overflow-hidden">
-            <div class="p-6 border-b border-slate-100">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                        <i class="fa-solid fa-circle-nodes text-indigo-600"></i>
-                        <span>Configurar Enlace de Google Sheets</span>
-                    </h3>
-                    <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-                <p class="text-xs text-slate-500 mt-1">Conecta esta aplicación a tu planilla del docente para registrar el progreso de tu curso.</p>
-            </div>
-            <div class="p-6 space-y-4">
-                <div class="bg-indigo-50 text-indigo-800 rounded-lg p-3 text-xs leading-relaxed">
-                    <p class="font-bold mb-1"><i class="fa-solid fa-circle-question mr-1"></i> Enlace Sincronizado por Defecto</p>
-                    Se ha establecido el enlace proporcionado por el profesor. Puedes cambiarlo aquí si deseas enlazar otra planilla.
-                </div>
-                <div class="space-y-1.5">
-                    <label for="sheetUrlInput" class="text-xs font-bold text-slate-500">URL de la Aplicación Web (Google Sheets):</label>
-                    <input type="text" id="sheetUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border-2 border-slate-200 rounded-lg px-3 py-2.5 text-xs font-semibold focus:border-indigo-600 focus:ring-0">
-                </div>
-            </div>
-            <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end space-x-2">
-                <button onclick="closeSyncModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cerrar</button>
-                <button onclick="saveSyncUrl()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-xs font-bold rounded-lg shadow-sm transition-colors">Guardar Configuración</button>
             </div>
         </div>
     </div>
@@ -584,7 +568,7 @@
 
         // Sync State URL - Configured to Teacher's Sheet Web App by default
         const TEACHER_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzv6T5SzGXL92HJ8vDMwRjgU1C6WklCX32sh7H_gWIgVQPGTiHyxDBShQMgVo2FgeiJ2g/exec";
-        let sheetsWebUrl = localStorage.getItem('sheetsWebUrl') || TEACHER_SHEETS_URL;
+        let sheetsWebUrl = TEACHER_SHEETS_URL; // Removida la configuración manual del estudiante
 
         // ====================================================================
         // INITIALIZATION
@@ -603,7 +587,6 @@
         const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'PNG', 'JPG', 'JPEG'];
         
         function handleImageLoadError(img) {
-            // Unused as we now handle loading safely through recursive checking
             img.src = "https://placehold.co/400x400/f1f5f9/4f46e5?text=Present+Continuous";
         }
 
@@ -649,9 +632,9 @@
             const categoryPill = document.getElementById('categoryPill');
             categoryPill.innerText = ex.type === 'singular' ? 'Singular (He / She)' : 'Plural (They)';
             if (ex.type === 'singular') {
-                categoryPill.className = "absolute top-4 left-4 text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 shadow-sm";
+                categoryPill.className = "absolute top-4 left-4 text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 dark:bg-indigo-950 dark:border-indigo-850 dark:text-indigo-300 shadow-sm transition-colors";
             } else {
-                categoryPill.className = "absolute top-4 left-4 text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 shadow-sm";
+                categoryPill.className = "absolute top-4 left-4 text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-850 dark:text-blue-300 shadow-sm transition-colors";
             }
 
             document.getElementById('activityVerb').innerText = `${ex.verb} (${ex.desc})`;
@@ -672,13 +655,13 @@
             // Grammar
             const gramInput = document.getElementById('grammarInput');
             gramInput.value = "";
-            gramInput.className = "w-full text-lg font-semibold border-2 border-slate-200 rounded-xl px-4 py-3 focus:border-indigo-600 focus:ring-0 transition-colors bg-slate-50/50";
+            gramInput.className = "w-full text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20 text-slate-950 dark:text-white";
             document.getElementById('grammarFeedback').className = "hidden p-4 rounded-xl border flex items-start space-x-3 transition-all";
             
             // Questions
             const quesInput = document.getElementById('questionsInput');
             quesInput.value = "";
-            quesInput.className = "w-full text-lg font-semibold border-2 border-slate-200 rounded-xl px-4 py-3 focus:border-blue-600 focus:ring-0 transition-colors bg-slate-50/50";
+            quesInput.className = "w-full text-lg font-semibold border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-0 transition-colors bg-slate-50/50 dark:bg-slate-950/20 text-slate-950 dark:text-white";
             document.getElementById('questionsFeedback').className = "hidden p-4 rounded-xl border flex items-start space-x-3 transition-all";
 
             // Shadowing
@@ -757,7 +740,7 @@
                 } else {
                     content.classList.add('hidden');
                     content.classList.remove('flex');
-                    btn.className = "flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-900 hover:bg-white/50";
+                    btn.className = "flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-150 flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800";
                 }
             });
 
@@ -797,35 +780,35 @@
             if (inputCleaned === targetCleanedPrimary) {
                 score.grammar[currentIndex] = true;
                 
-                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-emerald-50 border-emerald-200 text-emerald-800";
-                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400"></i>';
                 feedbackTitle.innerText = "¡Excelente respuesta!";
                 feedbackDesc.innerText = `Has respondido correctamente utilizando la contracción gramatical: "${ex.grammarAnswerPrimary}"`;
                 
-                inputField.className = "w-full text-lg font-semibold border-2 border-emerald-500 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-emerald-50/20";
+                inputField.className = "w-full text-lg font-semibold border-2 border-emerald-500 dark:border-emerald-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-emerald-50/20 dark:bg-emerald-950/20 text-slate-950 dark:text-white";
                 showToast("¡Gramática Perfecta!", "success");
             } 
             // Correct but missing contraction
             else if (inputCleaned === targetCleanedFull) {
                 score.grammar[currentIndex] = false; // Requiring contraction as instructed
                 
-                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-amber-50 border-amber-200 text-amber-800";
-                feedbackIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-500"></i>';
+                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-500 dark:text-amber-400"></i>';
                 feedbackTitle.innerText = "¡Casi correcto!";
-                feedbackDesc.innerHTML = `Tu respuesta gramatical es correcta, pero para el desarrollo de fluidez A1, debes usar la <b>contracción gramatical</b>. <br>La respuesta correcta es: <span class="font-extrabold underline text-slate-900">${ex.grammarAnswerPrimary}</span>`;
+                feedbackDesc.innerHTML = `Tu respuesta gramatical es correcta, pero para el desarrollo de fluidez A1, debes usar la <b>contracción gramatical</b>. <br>La respuesta correcta es: <span class="font-extrabold underline text-slate-900 dark:text-white">${ex.grammarAnswerPrimary}</span>`;
                 
-                inputField.className = "w-full text-lg font-semibold border-2 border-amber-500 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-amber-50/20";
+                inputField.className = "w-full text-lg font-semibold border-2 border-amber-500 dark:border-amber-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-amber-50/20 dark:bg-amber-950/20 text-slate-950 dark:text-white";
             } 
             // Incorrect response
             else {
                 score.grammar[currentIndex] = false;
                 
-                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-rose-50 border-rose-200 text-rose-800";
-                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600"></i>';
+                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 dark:text-rose-400"></i>';
                 feedbackTitle.innerText = "Estructura Incorrecta";
-                feedbackDesc.innerHTML = `La respuesta no coincide con el ejercicio. Recuerda estructurar con el sujeto, el verbo 'to be' correspondiente, y la acción terminando en '-ing'. <br><b>La forma correcta sugerida es:</b> <span class="font-extrabold text-slate-900 underline">${ex.grammarAnswerPrimary}</span>`;
+                feedbackDesc.innerHTML = `La respuesta no coincide con el ejercicio. Recuerda estructurar con el sujeto, el verbo 'to be' correspondiente, y la acción terminando en '-ing'. <br><b>La forma correcta sugerida es:</b> <span class="font-extrabold text-slate-900 dark:text-white underline">${ex.grammarAnswerPrimary}</span>`;
                 
-                inputField.className = "w-full text-lg font-semibold border-2 border-rose-500 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-rose-50/20";
+                inputField.className = "w-full text-lg font-semibold border-2 border-rose-500 dark:border-rose-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-rose-50/20 dark:bg-rose-950/20 text-slate-950 dark:text-white";
                 showToast("Revisa la estructura correcta.", "error");
             }
 
@@ -856,22 +839,22 @@
             if (inputCleaned === targetCleaned) {
                 score.questions[currentIndex] = true;
                 
-                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-emerald-50 border-emerald-200 text-emerald-800";
-                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400"></i>';
                 feedbackTitle.innerText = "¡Excelente Pregunta!";
-                feedbackDesc.innerText = `Has formulado la pregunta formal de forma excelente: "${ex.questionAnswerPrimary}"`;
+                feedbackDesc.innerText = `Has formulado la pregunta de forma excelente: "${ex.questionAnswerPrimary}"`;
                 
-                inputField.className = "w-full text-lg font-semibold border-2 border-emerald-500 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-emerald-50/20";
+                inputField.className = "w-full text-lg font-semibold border-2 border-emerald-500 dark:border-emerald-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-emerald-50/20 dark:bg-emerald-950/20 text-slate-950 dark:text-white";
                 showToast("¡Pregunta Correcta!", "success");
             } else {
                 score.questions[currentIndex] = false;
                 
-                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-rose-50 border-rose-200 text-rose-800";
-                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600"></i>';
+                feedbackDiv.className = "p-4 rounded-xl border flex items-start space-x-3 transition-all bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 dark:text-rose-400"></i>';
                 feedbackTitle.innerText = "Estructura Incorrecta";
-                feedbackDesc.innerHTML = `Para hacer preguntas cerradas (Yes/No) en Present Continuous, coloca el verbo <b>Am/Is/Are</b> al principio de la oración, seguido del pronombre y la acción terminando en <b>-ing</b>. <br><b>La forma correcta es:</b> <span class="font-extrabold text-slate-900 underline">${ex.questionAnswerPrimary}</span>`;
+                feedbackDesc.innerHTML = `Para hacer preguntas cerradas (Yes/No) en Present Continuous, coloca el verbo <b>Am/Is/Are</b> al principio de la oración, seguido del pronombre y la acción terminando en <b>-ing</b>. <br><b>La forma correcta es:</b> <span class="font-extrabold text-slate-900 dark:text-white underline">${ex.questionAnswerPrimary}</span>`;
                 
-                inputField.className = "w-full text-lg font-semibold border-2 border-rose-500 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-rose-50/20";
+                inputField.className = "w-full text-lg font-semibold border-2 border-rose-500 dark:border-rose-500/80 rounded-xl px-4 py-3 focus:ring-0 transition-colors bg-rose-50/20 dark:bg-rose-950/20 text-slate-950 dark:text-white";
                 showToast("Revisa la estructura de la pregunta.", "error");
             }
 
@@ -889,7 +872,7 @@
                 if (parseFloat(s) === speed) {
                     btn.className = "text-xs font-bold px-2.5 py-1 rounded text-white bg-indigo-600 shadow-sm transition-all";
                 } else {
-                    btn.className = "text-xs font-bold px-2 py-1 rounded hover:bg-white/50 text-slate-600 transition-all";
+                    btn.className = "text-xs font-bold px-2 py-1 rounded hover:bg-white/50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all";
                 }
             });
         }
@@ -973,7 +956,7 @@
         function stopSpeechRecordingUI() {
             isRecordingSpeech = false;
             const micBtn = document.getElementById('micBtn');
-            micBtn.className = "w-16 h-16 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 focus:outline-none";
+            micBtn.className = "w-16 h-16 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 focus:outline-none";
             document.getElementById('micInstructions').innerText = "Haz clic en el micrófono para empezar a hablar";
         }
 
@@ -1035,27 +1018,27 @@
             resDiv.classList.remove('hidden');
 
             if (scorePercent >= 85) {
-                resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-emerald-50 border-emerald-200 text-emerald-800";
-                resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-emerald-100 text-emerald-600";
+                resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300";
+                resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400";
                 resIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
                 resStatus.innerText = "¡Excelente pronunciación!";
-                resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-950";
+                resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-950 dark:bg-emerald-800 dark:text-emerald-100";
                 resScore.innerText = `${scorePercent}% Match`;
                 resFeedback.innerText = "Tu ritmo, entonación y palabras coinciden muy bien con el modelo nativo.";
             } else if (scorePercent >= 60) {
-                resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-amber-50 border-amber-200 text-amber-800";
-                resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-amber-100 text-amber-600";
+                resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300";
+                resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400";
                 resIcon.innerHTML = '<i class="fa-solid fa-microphone-lines"></i>';
                 resStatus.innerText = "Buen intento, sigue practicando";
-                resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-950";
+                resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-950 dark:bg-amber-800 dark:text-amber-100";
                 resScore.innerText = `${scorePercent}% Match`;
                 resFeedback.innerHTML = `Estás muy cerca. Prueba ralentizando el audio de guía a <b>0.75x</b> y asegúrate de pronunciar la contracción.`;
             } else {
-                resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-slate-50 border-slate-200 text-slate-800";
-                resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-slate-200 text-slate-600";
+                resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200";
+                resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400";
                 resIcon.innerHTML = '<i class="fa-solid fa-face-thinking"></i>';
                 resStatus.innerText = "Podemos mejorarlo";
-                resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-300 text-slate-800";
+                resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200";
                 resScore.innerText = `${scorePercent}% Match`;
                 resFeedback.innerText = "Haz clic en el altavoz para oírlo a velocidad lenta e inténtalo de nuevo.";
             }
@@ -1072,11 +1055,11 @@
             const resFeedback = document.getElementById('shadowingResultFeedback');
 
             resDiv.classList.remove('hidden');
-            resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-indigo-50 border-indigo-100 text-indigo-900";
-            resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-indigo-100 text-indigo-600";
+            resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-indigo-50 dark:bg-indigo-950/40 border-indigo-100 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200";
+            resIcon.className = "w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400";
             resIcon.innerHTML = '<i class="fa-solid fa-circle-question"></i>';
             resStatus.innerText = "Autoevaluación de Voz";
-            resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-200 text-indigo-950";
+            resScore.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-200 text-indigo-950 dark:bg-indigo-800 dark:text-indigo-100";
             resScore.innerText = "Auto-Eval";
             resFeedback.innerHTML = `El reconocimiento de voz en tiempo real no está activo en este navegador. <br>¿Pudiste imitar el sonido? <div class="mt-2 flex space-x-2"><button onclick="applyManualShadowingScore(100)" class="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded">¡Me salió muy bien!</button><button onclick="applyManualShadowingScore(65)" class="bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded">Más o menos</button></div>`;
         }
@@ -1086,12 +1069,12 @@
             updateProgressUI();
             
             const resDiv = document.getElementById('shadowingResultContainer');
-            resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-emerald-50 border-emerald-200 text-emerald-800";
+            resDiv.className = "w-full p-4 rounded-xl border flex items-center space-x-4 text-left transition-all bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300";
             resDiv.innerHTML = `
-                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-circle-check"></i></div>
                 <div>
-                    <h5 class="font-bold text-xs">Puntaje registrado localmente</h5>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Asignado manualmente: ${percent}% Match.</p>
+                    <h5 class="font-bold text-xs text-slate-800 dark:text-white">Puntaje registrado localmente</h5>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Asignado manualmente: ${percent}% Match.</p>
                 </div>
             `;
             autoSyncIfPossible();
@@ -1111,13 +1094,7 @@
         // GOOGLE SHEETS SYNC SYSTEM
         // ====================================================================
         async function sendStudentProgressToSheets() {
-            if (!sheetsWebUrl) {
-                openSyncModal();
-                showToast("Por favor, configura la URL de sincronización primero.", "warning");
-                return;
-            }
-
-            showToast("Sincronizando progreso con la planilla del docente...", "info");
+            if (!sheetsWebUrl) return;
 
             const grammarCorrectCount = Object.values(score.grammar).filter(v => v === true).length;
             const questionsCorrectCount = Object.values(score.questions).filter(v => v === true).length;
@@ -1222,7 +1199,7 @@
 
             // Set Avatar Initials
             const initials = currentStudent.name.split(" ").map(n => n[0]).join("").substring(0,2).toUpperCase();
-            document.getElementById('studentAvatarContainer').innerHTML = `<span class="text-xs font-extrabold text-indigo-700">${initials}</span>`;
+            document.getElementById('studentAvatarContainer').innerHTML = `<span class="text-xs font-extrabold text-indigo-700 dark:text-indigo-300">${initials}</span>`;
             
             // Tracker Card Info
             document.getElementById('trackerName').innerText = currentStudent.name;
@@ -1261,7 +1238,7 @@
         window.onload = function () {
             if (typeof google !== 'undefined' && google.accounts) {
                 google.accounts.id.initialize({
-                    client_id: "89851651817-u06onr7l1o40clvghb7d30o7eha9b1p9.apps.googleusercontent.com", 
+                    client_id: "1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com", 
                     callback: handleCredentialResponse
                 });
                 google.accounts.id.renderButton(
@@ -1271,47 +1248,22 @@
             }
         }
 
-        // ====================================================================
-        // GOOGLE SHEETS SETUP CONTEXT & SETTINGS
-        // ====================================================================
-        function openSyncModal() {
-            document.getElementById('sheetUrlInput').value = sheetsWebUrl;
-            document.getElementById('syncModal').classList.remove('hidden');
-        }
-
-        function closeSyncModal() {
-            document.getElementById('syncModal').classList.add('hidden');
-        }
-
-        function saveSyncUrl() {
-            const urlInput = document.getElementById('sheetUrlInput').value.trim();
-            if (urlInput) {
-                sheetsWebUrl = urlInput;
-                localStorage.setItem('sheetsWebUrl', urlInput);
-                showToast("¡Enlace de Google Sheets configurado y guardado!", "success");
-                updateSyncIndicator();
-                closeSyncModal();
-                sendStudentProgressToSheets();
-            } else {
-                sheetsWebUrl = "";
-                localStorage.removeItem('sheetsWebUrl');
-                showToast("Enlace eliminado. El progreso no se guardará en la nube.", "warning");
-                updateSyncIndicator();
-                closeSyncModal();
-            }
-        }
-
         function updateSyncIndicator() {
-            const indicator = document.getElementById('syncIndicator');
             const syncLabelStatus = document.getElementById('syncIndicatorStatus');
-            if (sheetsWebUrl) {
-                indicator.className = "absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-emerald-500 rounded-full";
-                syncLabelStatus.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span> Sincronizado';
-                syncLabelStatus.className = "text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1";
+            syncLabelStatus.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span> Sincronizado';
+            syncLabelStatus.className = "text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded-full flex items-center space-x-1";
+        }
+
+        // ====================================================================
+        // DARK MODE SYSTEM CONTROLS
+        // ====================================================================
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
             } else {
-                indicator.className = "absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full";
-                syncLabelStatus.innerHTML = '<span class="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5"></span> Sin Nube';
-                syncLabelStatus.className = "text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full flex items-center space-x-1";
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
             }
         }
 
